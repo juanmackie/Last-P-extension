@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { extractText, fallbackSummary, limitWords } from "../extensions/last-p.ts";
+import { extractText, fallbackIntent, limitWords } from "../extensions/last-p.ts";
 
 test("extractText joins text blocks and ignores non-text content", () => {
 	assert.equal(
@@ -14,14 +14,18 @@ test("extractText joins text blocks and ignores non-text content", () => {
 	);
 });
 
-test("limitWords returns safe, punctuation-free summaries", () => {
+test("limitWords returns safe, punctuation-free intent labels", () => {
 	assert.equal(
-		limitWords("\u001b[31mSummary: Fix login!\u001b[0m now."),
+		limitWords("\u001b[31mIntent: Fix login!\u001b[0m now."),
 		"Fix login now",
 	);
 	assert.equal(limitWords("one two three four five six"), "one two three four five");
 });
 
-test("fallbackSummary handles prompts without displayable words", () => {
-	assert.equal(fallbackSummary("!!!"), "Image request");
+test("fallbackIntent preserves prompt context when no model is available", () => {
+	assert.equal(fallbackIntent("Fix the login flow before release"), "Fix the login flow before");
+});
+
+test("fallbackIntent handles prompts without displayable words", () => {
+	assert.equal(fallbackIntent("!!!"), "Image request");
 });

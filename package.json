@@ -2,7 +2,7 @@
   "name": "last-p",
   "version": "1.0.1",
   "type": "module",
-  "description": "Show a five-word summary of the latest pi prompt in the status bar.",
+  "description": "Show a five-word intent label for the latest pi prompt in the status bar.",
   "keywords": ["pi-package"],
   "license": "MIT",
   "repository": {

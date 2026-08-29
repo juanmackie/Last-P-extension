@@ -1,8 +1,8 @@
 /**
  * Last P
  *
- * Shows a short summary of the most recent user prompt in pi's status bar.
- * The fixed status key means each new prompt replaces the previous summary.
+ * Shows a short intent label for the most recent user prompt in pi's status bar.
+ * The fixed status key means each new prompt replaces the previous intent.
  */
 
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
@@ -10,16 +10,17 @@ import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-a
 const STATUS_KEY = "last-p";
 const MAX_WORDS = 5;
 const MAX_PROMPT_LENGTH = 12_000;
-const MAX_SUMMARY_TIME_MS = 5_000;
+const MAX_INTENT_TIME_MS = 5_000;
 
 const ANSI_ESCAPE_SEQUENCE =
 	/\u001B(?:\][^\u0007]*(?:\u0007|\u001B\\)|\[[0-?]*[ -/]*[@-~]|[@-_])/g;
 const CONTROL_CHARACTERS = /[\u0000-\u001F\u007F-\u009F]/g;
 const NON_WORD_CHARACTERS = /[^\p{L}\p{M}\p{N}\s]/gu;
 
-const SUMMARY_SYSTEM_PROMPT = [
-	"You summarize user prompts for a terminal status bar.",
-	"Return only a useful summary in 1 to 5 words.",
+const INTENT_SYSTEM_PROMPT = [
+	"You identify the intended outcome of user prompts for a terminal status bar.",
+	"Return only a concise, action-oriented intent in 1 to 5 words.",
+	"Describe what the user wants accomplished, not the prompt's opening words.",
 	"Use plain text with no quotation marks, labels, bullets, punctuation, or explanation.",
 ].join(" ");
 
@@ -48,14 +49,14 @@ export function limitWords(text: string): string {
 	const withoutLabel = text
 		.replace(ANSI_ESCAPE_SEQUENCE, "")
 		.replace(CONTROL_CHARACTERS, " ")
-		.replace(/^\s*(?:summary|title|topic)\s*:\s*/i, "")
+		.replace(/^\s*(?:summary|title|topic|intent)\s*:\s*/i, "")
 		.replace(NON_WORD_CHARACTERS, " ")
 		.trim();
 
 	return withoutLabel.split(/\s+/).filter(Boolean).slice(0, MAX_WORDS).join(" ");
 }
 
-export function fallbackSummary(prompt: string): string {
+export function fallbackIntent(prompt: string): string {
 	return limitWords(prompt) || "Image request";
 }
 
@@ -93,7 +94,7 @@ export default function (pi: ExtensionAPI) {
 		ctx.ui.setStatus(STATUS_KEY, undefined);
 	};
 
-	const summarizePrompt = async (
+	const identifyPromptIntent = async (
 		prompt: string,
 		ctx: ExtensionContext,
 		id: number,
@@ -101,11 +102,11 @@ export default function (pi: ExtensionAPI) {
 		activeController?.abort();
 		const controller = new AbortController();
 		activeController = controller;
-		setStatus(ctx, "Summarizing…");
+		setStatus(ctx, "Identifying intent…");
 
 		const model = ctx.model;
-		let summary = "";
-		const timeoutId = setTimeout(() => controller.abort(), MAX_SUMMARY_TIME_MS);
+		let intent = "";
+		const timeoutId = setTimeout(() => controller.abort(), MAX_INTENT_TIME_MS);
 
 		try {
 			if (model && ctx.modelRegistry.hasConfiguredAuth(model)) {
@@ -113,7 +114,7 @@ export default function (pi: ExtensionAPI) {
 					const response = await ctx.modelRegistry.complete(
 						model,
 						{
-							systemPrompt: SUMMARY_SYSTEM_PROMPT,
+							systemPrompt: INTENT_SYSTEM_PROMPT,
 							messages: [
 								{
 									role: "user",
@@ -131,13 +132,13 @@ export default function (pi: ExtensionAPI) {
 							signal: controller.signal,
 							cacheRetention: "none",
 							maxTokens: 32,
-							timeoutMs: MAX_SUMMARY_TIME_MS,
+							timeoutMs: MAX_INTENT_TIME_MS,
 							maxRetries: 0,
 						},
 					);
 
 					if (response.stopReason !== "aborted") {
-						summary = limitWords(
+						intent = limitWords(
 							response.content
 								.filter((part): part is { type: "text"; text: string } => part.type === "text")
 								.map((part) => part.text)
@@ -159,12 +160,12 @@ export default function (pi: ExtensionAPI) {
 			return;
 		}
 
-		setStatus(ctx, summary || fallbackSummary(prompt));
+		setStatus(ctx, intent || fallbackIntent(prompt));
 	};
 
-	const startSummary = (prompt: string, ctx: ExtensionContext): void => {
+	const startIntent = (prompt: string, ctx: ExtensionContext): void => {
 		const id = ++requestId;
-		void summarizePrompt(prompt, ctx, id);
+		void identifyPromptIntent(prompt, ctx, id);
 	};
 
 	pi.on("session_start", async (_event, ctx) => {
@@ -178,7 +179,7 @@ export default function (pi: ExtensionAPI) {
 			return;
 		}
 
-		startSummary(prompt, ctx);
+		startIntent(prompt, ctx);
 	});
 
 	pi.on("before_agent_start", async (event, ctx) => {
@@ -186,7 +187,7 @@ export default function (pi: ExtensionAPI) {
 			return;
 		}
 
-		startSummary(event.prompt.trim() || "Image request", ctx);
+		startIntent(event.prompt.trim() || "Image request", ctx);
 	});
 
 	pi.on("session_shutdown", async (_event, ctx) => {

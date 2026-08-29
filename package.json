@@ -1,6 +1,7 @@
 {
   "name": "last-p",
   "version": "1.0.0",
+  "type": "module",
   "description": "Show a five-word summary of the latest pi prompt in the status bar.",
   "keywords": ["pi-package"],
   "license": "MIT",
@@ -10,6 +11,9 @@
     "LICENSE",
     "package.json"
   ],
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/last-p.test.ts"
+  },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*"
   },

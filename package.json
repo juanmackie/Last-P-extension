@@ -1,0 +1,19 @@
+{
+  "name": "last-p",
+  "version": "1.0.0",
+  "description": "Show a five-word summary of the latest pi prompt in the status bar.",
+  "keywords": ["pi-package"],
+  "license": "MIT",
+  "files": [
+    "extensions",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "pi": {
+    "extensions": ["./extensions"]
+  }
+}

@@ -4,13 +4,21 @@ A [pi](https://pi.dev) extension that shows a five-word summary of the latest us
 
 ## Install
 
-Install this package from a local checkout:
+From the npm registry:
+
+```bash
+pi install npm:last-p
+```
+
+From a local checkout:
 
 ```bash
 pi install /absolute/path/to/last-p
 ```
 
 Pi loads the extension automatically after installation. The package has no runtime dependencies beyond pi.
+
+> This is a pi extension, not a command-line binary, so install it with `pi install` rather than `npx` or `npm install -g`.
 
 ## Behaviour
 

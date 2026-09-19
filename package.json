@@ -1,9 +1,11 @@
 {
   "name": "last-p",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "type": "module",
   "description": "Show a five-word intent label for the latest pi prompt in the status bar.",
-  "keywords": ["pi-package"],
+  "keywords": [
+    "pi-package"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -26,6 +28,8 @@
     "@earendil-works/pi-coding-agent": "*"
   },
   "pi": {
-    "extensions": ["./extensions"]
+    "extensions": [
+      "./extensions"
+    ]
   }
 }

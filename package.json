@@ -20,9 +20,15 @@
     "README.md",
     "LICENSE",
     "package.json"
-  ],
+  ],  "engines": {
+    "node": ">=22.6"
+  },
   "scripts": {
-    "test": "node --experimental-strip-types --test tests/last-p.test.ts"
+    "test": "node --experimental-strip-types --test tests/last-p.test.ts",
+    "prepublishOnly": "npm test"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*"

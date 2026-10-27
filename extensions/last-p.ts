@@ -187,7 +187,7 @@ export default function (pi: ExtensionAPI) {
 			return;
 		}
 
-		startIntent(event.prompt.trim() || "Image request", ctx);
+		startIntent((event.prompt && event.prompt.trim ? event.prompt.trim() : "") || "Image request", ctx);
 	});
 
 	pi.on("session_shutdown", async (_event, ctx) => {
